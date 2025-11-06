@@ -1,8 +1,11 @@
 package BankODC.BankODC.service;
 
+import BankODC.BankODC.dto.CompteDTO;
+import BankODC.BankODC.constants.ErrorMessages;
 import BankODC.BankODC.entity.Compte;
 import BankODC.BankODC.repository.CompteRepository;
 import BankODC.BankODC.exception.CompteException;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,55 +13,66 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
-public class CompteService {
+public class CompteService implements ICompteService {
 
     @Autowired
     private CompteRepository compteRepository;
 
-    public List<Compte> getAllComptes() {
-        return compteRepository.findAll();
+    @Autowired
+    private ModelMapper modelMapper;
+
+    public List<CompteDTO> getAllComptes() {
+        return compteRepository.findAll()
+                .stream()
+                .map(compte -> modelMapper.map(compte, CompteDTO.class))
+                .collect(Collectors.toList());
     }
 
-    public Optional<Compte> getCompteById(UUID id) {
+    public Optional<CompteDTO> getCompteById(UUID id) {
         if (id == null) {
-            throw new CompteException("ID_NULL", "L'identifiant du compte ne peut pas être null");
+            throw new CompteException(ErrorMessages.COMPTE_NOT_FOUND.name(), ErrorMessages.COMPTE_NOT_FOUND.getMessage());
         }
-        return compteRepository.findById(id);
+        return compteRepository.findById(id)
+                .map(compte -> modelMapper.map(compte, CompteDTO.class));
     }
 
-    public Compte saveCompte(Compte compte) {
-        if (compte == null) {
-            throw new CompteException("COMPTE_NULL", "Le compte ne peut pas être null");
+    public CompteDTO saveCompte(CompteDTO compteDTO) {
+        if (compteDTO == null) {
+            throw new CompteException(ErrorMessages.COMPTE_NOT_FOUND.name(), ErrorMessages.COMPTE_NOT_FOUND.getMessage());
         }
-        
+
+        Compte compte = modelMapper.map(compteDTO, Compte.class);
 
         if (compte.getSolde() == null) {
             compte.setSolde(BigDecimal.valueOf(0.0));
         }
-        
+
         validateCompte(compte);
-        return compteRepository.save(compte);
+        Compte savedCompte = compteRepository.save(compte);
+        return modelMapper.map(savedCompte, CompteDTO.class);
     }
 
-    public Compte updateCompte(UUID id, Compte compteDetails) {
+    public CompteDTO updateCompte(UUID id, CompteDTO compteDetails) {
         if (id == null || compteDetails == null) {
-            throw new CompteException("DONNEES_NULL", "L'id ou les détails du compte sont null");
+            throw new CompteException(ErrorMessages.INVALID_DATA.name(), ErrorMessages.INVALID_DATA.getMessage());
         }
 
         return compteRepository.findById(id)
             .map(compte -> {
-                updateCompteFields(compte, compteDetails);
+                updateCompteFields(compte, modelMapper.map(compteDetails, Compte.class));
                 validateCompte(compte);
-                return compteRepository.save(compte);
+                Compte savedCompte = compteRepository.save(compte);
+                return modelMapper.map(savedCompte, CompteDTO.class);
             })
-            .orElseThrow(() -> new CompteException("COMPTE_NON_TROUVE", "Compte non trouvé avec l'id: " + id));
+            .orElseThrow(() -> new CompteException(ErrorMessages.COMPTE_NOT_FOUND.name(), ErrorMessages.COMPTE_NOT_FOUND.getMessage()));
     }
 
     public boolean deleteCompte(UUID id) {
         if (id == null) {
-            throw new CompteException("ID_NULL", "L'identifiant du compte ne peut pas être null");
+            throw new CompteException(ErrorMessages.INVALID_DATA.name(), ErrorMessages.INVALID_DATA.getMessage());
         }
 
         return compteRepository.findById(id)
@@ -72,23 +86,21 @@ public class CompteService {
 
     private void validateCompte(Compte compte) {
         if (compte.getNumero() == null || compte.getNumero().trim().isEmpty()) {
-            throw new CompteException("NUMERO_INVALID", "Le numéro de compte est obligatoire");
+            throw new CompteException(ErrorMessages.REQUIRED_FIELD_MISSING.name(), ErrorMessages.REQUIRED_FIELD_MISSING.getMessage());
         }
 
-
         if (compte.getSolde().compareTo(BigDecimal.ZERO) < 0) {
-            throw new CompteException("SOLDE_NEGATIF", "Le solde ne peut pas être négatif");
+            throw new CompteException(ErrorMessages.COMPTE_NEGATIVE_BALANCE.name(), ErrorMessages.COMPTE_NEGATIVE_BALANCE.getMessage());
         }
 
         if (compte.getType() == null) {
-            throw new CompteException("TYPE_NULL", "Le type de compte est obligatoire");
+            throw new CompteException(ErrorMessages.COMPTE_INVALID_TYPE.name(), ErrorMessages.COMPTE_INVALID_TYPE.getMessage());
         }
     }
 
     private void validateDeletion(Compte compte) {
-
         if (compte.getSolde().compareTo(BigDecimal.ZERO) > 0) {
-            throw new CompteException("SOLDE_POSITIF", "Impossible de supprimer un compte avec un solde positif");
+            throw new CompteException(ErrorMessages.COMPTE_CANNOT_DELETE_WITH_BALANCE.name(), ErrorMessages.COMPTE_CANNOT_DELETE_WITH_BALANCE.getMessage());
         }
     }
 

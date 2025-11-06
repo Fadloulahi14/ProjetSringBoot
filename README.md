@@ -1,175 +1,213 @@
-# BankODC
+# BankODC - Application Bancaire Spring Boot
 
-Un système de gestion bancaire basé sur Spring Boot qui fournit des API REST pour gérer les clients bancaires, les comptes, les transactions et les administrateurs.
+## 📋 Description
 
-## Description
+BankODC est une application bancaire RESTful développée avec Spring Boot 3.5.7. Elle fournit des services complets de gestion bancaire incluant la gestion des clients, comptes, transactions et administrateurs.
 
-BankODC est un projet de démonstration construit avec Spring Boot qui démontre une architecture complète de système bancaire. Il inclut la gestion des utilisateurs (clients et administrateurs), la gestion des comptes et le traitement des transactions avec une base de données PostgreSQL en backend.
+## 🛠️ Technologies Utilisées
 
-## Fonctionnalités
+- **Framework**: Spring Boot 3.5.7
+- **Langage**: Java 17
+- **Base de données**: PostgreSQL
+- **ORM**: JPA/Hibernate
+- **Documentation API**: Swagger/OpenAPI
+- **Mapping objet**: ModelMapper
+- **Validation**: Jakarta Validation
+- **Build Tool**: Maven
 
-- **Gestion des Utilisateurs** : Support pour les clients et administrateurs avec accès basé sur les rôles
-- **Gestion des Comptes** : Créer et gérer des comptes bancaires avec suivi du solde
-- **Traitement des Transactions** : Enregistrer et gérer les transactions financières
-- **API RESTful** : API REST complète pour toutes les opérations bancaires
-- **Intégration Base de Données** : PostgreSQL avec JPA/Hibernate ORM
-- **Alimentation de Données** : Population initiale de données pour les tests
+## 📁 Architecture
 
-## Technologies Utilisées
+L'application suit une architecture hexagonale avec séparation claire des responsabilités :
 
-- **Java 17**
-- **Spring Boot 3.5.7**
-- **Spring Data JPA**
-- **Spring Web**
-- **Base de Données PostgreSQL**
-- **Lombok** (pour réduire le code boilerplate)
-- **Maven** (outil de build)
-- **SpringDoc OpenAPI** (documentation API Swagger)
+```
+src/main/java/BankODC/BankODC/
+├── config/           # Configuration (Swagger, ModelMapper)
+├── constants/        # Constantes (messages d'erreur/succès)
+├── controller/       # Contrôleurs REST
+├── dto/             # Objets de transfert de données
+├── entity/          # Entités JPA
+├── exception/       # Gestion des exceptions
+├── repository/      # Couches d'accès aux données
+└── service/         # Logique métier
+```
 
-## Prérequis
+## 🚀 Fonctionnalités
 
-Avant d'exécuter cette application, assurez-vous d'avoir installé les éléments suivants :
+### Gestion des Clients
+- ✅ Création, lecture, mise à jour et suppression des clients
+- ✅ Recherche par ID
+- ✅ Liste paginée des clients
 
-- Java 17 ou supérieur
+### Gestion des Comptes
+- ✅ Création de comptes (Courant, Épargne)
+- ✅ Consultation des soldes
+- ✅ Gestion des numéros de compte
+
+### Gestion des Transactions
+- ✅ Dépôt, retrait, virement
+- ✅ Historique des transactions
+- ✅ Suivi des montants et dates
+
+### Gestion des Administrateurs
+- ✅ Authentification et autorisation
+- ✅ Gestion des rôles utilisateur
+
+### API RESTful
+- ✅ Endpoints documentés avec Swagger
+- ✅ Réponses standardisées avec ApiResponse
+- ✅ Validation des données d'entrée
+- ✅ Gestion centralisée des erreurs
+
+## 🔧 Installation et Configuration
+
+### Prérequis
+- Java 17
 - Maven 3.6+
-- PostgreSQL 12+
-- Git
+- PostgreSQL
 
-## Installation
+### Configuration de la Base de Données
 
-1. **Cloner le dépôt :**
-   ```bash
-   git clone <repository-url>
-   cd BankODC
-   ```
+1. Créer une base de données PostgreSQL nommée `bankodc`
+2. Configurer les paramètres de connexion dans `src/main/resources/application.yml` :
 
-2. **Installer les dépendances :**
-   ```bash
-   JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 mvn clean install
-   ```
+```yaml
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bankodc
+    username: votre_username
+    password: votre_password
+  jpa:
+    hibernate:
+      ddl-auto: update
+```
 
-## Configuration
+### Compilation et Exécution
 
-L'application utilise `application.yml` pour la configuration. Paramètres clés :
+```bash
+# Compiler le projet
+mvn clean compile
 
-- **Configuration Base de Données :**
-  - URL : `jdbc:postgresql://localhost:5433/Bank`
-  - Nom d'utilisateur : `pguser`
-  - Mot de passe : `pgpassword`
+# Démarrer l'application
+mvn spring-boot:run
 
-- **Configuration Serveur :**
-  - Port : `8083`
+# Ou avec Java directement
+java -jar target/BankODC-0.0.1-SNAPSHOT.jar
+```
 
-- **Configuration JPA :**
-  - DDL Auto : `create-drop`
-  - Afficher SQL : `true`
+L'application sera accessible sur `http://localhost:8083`
 
-**Note :** Assurez-vous que PostgreSQL fonctionne et que la base de données `Bank` existe avec les identifiants spécifiés.
+## 📚 API Documentation
 
-## Exécution de l'Application
+Une fois l'application démarrée, la documentation Swagger est disponible à :
+- **Swagger UI**: http://localhost:8083/swagger-ui.html
+- **OpenAPI JSON**: http://localhost:8083/v3/api-docs
 
-1. **Démarrer le service PostgreSQL** (si pas déjà en cours)
-
-2. **Exécuter l'application :**
-   ```bash
-   JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 mvn spring-boot:run
-   ```
-
-   Ou exécuter le fichier JAR :
-   ```bash
-   JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 java -jar target/BankODC-0.0.1-SNAPSHOT.jar
-   ```
-
-3. **Accéder à l'application :**
-   - URL de base API : `http://localhost:8083`
-   - Documentation API Swagger : `http://localhost:8083/swagger-ui/index.html`
-   - Spécification OpenAPI : `http://localhost:8083/v3/api-docs`
-
-## Documentation API
-
-L'application utilise **Swagger/OpenAPI** pour documenter l'API REST. Une fois l'application démarrée, vous pouvez accéder à :
-
-- **Interface Swagger UI** : `http://localhost:8083/swagger-ui/index.html`
-  - Interface interactive pour tester les endpoints
-  - Documentation détaillée de chaque endpoint
-  - Possibilité d'exécuter des requêtes directement depuis l'interface
-
-- **Spécification OpenAPI JSON** : `http://localhost:8083/v3/api-docs`
-  - Spécification complète au format JSON
-  - Utilisable pour générer des clients API ou de la documentation
-
-### Fonctionnalités de la documentation :
-- Description détaillée de chaque endpoint
-- Codes de réponse HTTP documentés
-- Schémas des objets de requête/réponse
-- Possibilité de tester les API directement depuis l'interface
-
-## Points de Terminaison API
+## 🎯 Endpoints Principaux
 
 ### Clients
-- `GET /api/clients` - Obtenir tous les clients
-- `GET /api/clients/{id}` - Obtenir un client par ID
-- `POST /api/clients` - Créer un nouveau client
-- `PUT /api/clients/{id}` - Mettre à jour un client
+- `GET /api/clients` - Liste des clients
+- `GET /api/clients/{id}` - Détails d'un client
+- `POST /api/clients` - Créer un client
+- `PUT /api/clients/{id}` - Modifier un client
 - `DELETE /api/clients/{id}` - Supprimer un client
 
 ### Comptes
-- `GET /api/comptes` - Obtenir tous les comptes
-- `GET /api/comptes/{id}` - Obtenir un compte par ID
-- `POST /api/comptes` - Créer un nouveau compte
-- `PUT /api/comptes/{id}` - Mettre à jour un compte
-- `DELETE /api/comptes/{id}` - Supprimer un compte
+- `GET /api/comptes` - Liste des comptes
+- `GET /api/comptes/{id}` - Détails d'un compte
+- `POST /api/comptes` - Créer un compte
 
 ### Transactions
-- `GET /api/transactions` - Obtenir toutes les transactions
-- `GET /api/transactions/{id}` - Obtenir une transaction par ID
-- `POST /api/transactions` - Créer une nouvelle transaction
-- `PUT /api/transactions/{id}` - Mettre à jour une transaction
-- `DELETE /api/transactions/{id}` - Supprimer une transaction
+- `GET /api/transactions` - Liste des transactions
+- `POST /api/transactions` - Créer une transaction
 
 ### Administrateurs
-- `GET /api/admins` - Obtenir tous les administrateurs
-- `GET /api/admins/{id}` - Obtenir un administrateur par ID
-- `POST /api/admins` - Créer un nouvel administrateur
-- `PUT /api/admins/{id}` - Mettre à jour un administrateur
-- `DELETE /api/admins/{id}` - Supprimer un administrateur
+- `GET /api/admins` - Liste des administrateurs
+- `POST /api/admins` - Créer un administrateur
 
-### Utilisateurs
-- `GET /api/users` - Obtenir tous les utilisateurs
-- `GET /api/users/{id}` - Obtenir un utilisateur par ID
-- `POST /api/users` - Créer un nouvel utilisateur
-- `PUT /api/users/{id}` - Mettre à jour un utilisateur
-- `DELETE /api/users/{id}` - Supprimer un utilisateur
+### Données de Test
+- `POST /api/data/seed` - Initialiser des données de test
 
-## Schéma de Base de Données
+## 📦 Structure des Données
 
-L'application utilise les entités principales suivantes :
-
-- **User** : Entité de base pour l'authentification (ID, nom d'utilisateur, mot de passe)
-- **Admin** : Étend User avec des champs spécifiques aux administrateurs
-- **Client** : Informations client (détails personnels, lié à User)
-- **Compte** : Compte bancaire (numéro de compte, solde, type, lié à User)
-- **Transaction** : Transactions financières (montant, type, date, lié à Compte)
-
-## Tests
-
-Exécuter les tests avec Maven :
-```bash
-JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 mvn test
+### Client
+```json
+{
+  "nom": "DUPONT",
+  "prenom": "Marie",
+  "email": "marie.dupont@email.com",
+  "telephone": "+221 77 234 56 78",
+  "adresse": "Dakar, Sénégal",
+  "dateNaissance": "1990-05-15"
+}
 ```
 
-## Contribution
+### Compte
+```json
+{
+  "type": "COURANT",
+  "solde": 2500.00,
+  "numero": "FR76 1234 5678 9012 3456 7890 1"
+}
+```
 
-1. Forker le dépôt
-2. Créer une branche de fonctionnalité (`git checkout -b feature/AmazingFeature`)
-3. Commiter vos changements (`git commit -m 'Add some AmazingFeature'`)
-4. Pousser vers la branche (`git push origin feature/AmazingFeature`)
+### Transaction
+```json
+{
+  "type": "DEPOT",
+  "montant": 3000.00,
+  "date": "2024-01-15"
+}
+```
+
+## 🔒 Sécurité
+
+- Authentification basée sur les rôles (ADMIN, CLIENT)
+- Validation des données d'entrée
+- Gestion sécurisée des mots de passe
+- Protection contre les attaques courantes
+
+## 🧪 Tests
+
+```bash
+# Exécuter les tests
+mvn test
+
+# Tests avec couverture
+mvn test jacoco:report
+```
+
+## 📊 Données de Test
+
+L'application peut être initialisée avec des données de test via l'endpoint `/api/data/seed` :
+
+- **1 Administrateur** : admin@bankodc.com
+- **2 Clients** avec comptes et transactions :
+  - Marie Dupont (Compte Courant: 2500€)
+  - Jean Martin (Compte Épargne: 5000€)
+
+## 🤝 Contribution
+
+1. Fork le projet
+2. Créer une branche feature (`git checkout -b feature/AmazingFeature`)
+3. Commit les changements (`git commit -m 'Add some AmazingFeature'`)
+4. Push vers la branche (`git push origin feature/AmazingFeature`)
 5. Ouvrir une Pull Request
 
-## Licence
+## 📝 Licence
 
-Ce projet est sous licence MIT - voir le fichier LICENSE pour plus de détails.
+Ce projet est sous licence MIT - voir le fichier [LICENSE](LICENSE) pour plus de détails.
 
-## Contact
+## 👥 Auteurs
 
-Pour des questions ou du support, veuillez contacter l'équipe de développement.
+- **Développeur**: [Votre Nom]
+- **Organisation**: BankODC
+
+## 📞 Support
+
+Pour toute question ou problème :
+- Ouvrir une issue sur GitHub
+- Contacter l'équipe de développement
+
+---
+
+**Note**: Assurez-vous que PostgreSQL est en cours d'exécution avant de démarrer l'application.

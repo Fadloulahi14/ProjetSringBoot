@@ -1,11 +1,12 @@
 package BankODC.BankODC.controller;
 
-import BankODC.BankODC.entity.Transaction;
-import BankODC.BankODC.service.TransactionService;
+import BankODC.BankODC.dto.TransactionDTO;
+import BankODC.BankODC.service.ITransactionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,14 +21,14 @@ import java.util.UUID;
 public class TransactionController {
 
     @Autowired
-    private TransactionService transactionService;
+    private ITransactionService transactionService;
 
     @GetMapping
     @Operation(summary = "Obtenir toutes les transactions", description = "Récupère la liste de toutes les transactions")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Liste des transactions récupérée avec succès")
     })
-    public List<Transaction> getAllTransactions() {
+    public List<TransactionDTO> getAllTransactions() {
         return transactionService.getAllTransactions();
     }
 
@@ -37,8 +38,8 @@ public class TransactionController {
         @ApiResponse(responseCode = "200", description = "Transaction trouvée"),
         @ApiResponse(responseCode = "404", description = "Transaction non trouvée")
     })
-    public ResponseEntity<Transaction> getTransactionById(@PathVariable UUID id) {
-        Optional<Transaction> transaction = transactionService.getTransactionById(id);
+    public ResponseEntity<TransactionDTO> getTransactionById(@PathVariable UUID id) {
+        Optional<TransactionDTO> transaction = transactionService.getTransactionById(id);
         return transaction.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
@@ -48,8 +49,8 @@ public class TransactionController {
         @ApiResponse(responseCode = "200", description = "Transaction créée avec succès"),
         @ApiResponse(responseCode = "400", description = "Données invalides")
     })
-    public Transaction createTransaction(@RequestBody Transaction transaction) {
-        return transactionService.saveTransaction(transaction);
+    public TransactionDTO createTransaction(@Valid @RequestBody TransactionDTO transactionDTO) {
+        return transactionService.saveTransaction(transactionDTO);
     }
 
     @PutMapping("/{id}")
@@ -58,11 +59,12 @@ public class TransactionController {
         @ApiResponse(responseCode = "200", description = "Transaction mise à jour avec succès"),
         @ApiResponse(responseCode = "404", description = "Transaction non trouvée")
     })
-    public ResponseEntity<Transaction> updateTransaction(@PathVariable UUID id, @RequestBody Transaction transactionDetails) {
-        Optional<Transaction> transaction = transactionService.getTransactionById(id);
-        if (transaction.isPresent()) {
+    public ResponseEntity<TransactionDTO> updateTransaction(@PathVariable UUID id, @Valid @RequestBody TransactionDTO transactionDetails) {
+        Optional<TransactionDTO> existingTransaction = transactionService.getTransactionById(id);
+        if (existingTransaction.isPresent()) {
             transactionDetails.setId(id);
-            return ResponseEntity.ok(transactionService.saveTransaction(transactionDetails));
+            TransactionDTO updatedTransaction = transactionService.saveTransaction(transactionDetails);
+            return ResponseEntity.ok(updatedTransaction);
         } else {
             return ResponseEntity.notFound().build();
         }
@@ -75,7 +77,8 @@ public class TransactionController {
         @ApiResponse(responseCode = "404", description = "Transaction non trouvée")
     })
     public ResponseEntity<Void> deleteTransaction(@PathVariable UUID id) {
-        if (transactionService.getTransactionById(id).isPresent()) {
+        Optional<TransactionDTO> transaction = transactionService.getTransactionById(id);
+        if (transaction.isPresent()) {
             transactionService.deleteTransaction(id);
             return ResponseEntity.noContent().build();
         } else {

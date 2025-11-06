@@ -1,11 +1,12 @@
 package BankODC.BankODC.controller;
 
-import BankODC.BankODC.entity.Client;
-import BankODC.BankODC.service.ClientService;
+import BankODC.BankODC.dto.ClientDTO;
+import BankODC.BankODC.service.IClientService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,14 +21,14 @@ import java.util.UUID;
 public class ClientController {
 
     @Autowired
-    private ClientService clientService;
+    private IClientService clientService;
 
     @GetMapping
     @Operation(summary = "Obtenir tous les clients", description = "Récupère la liste de tous les clients")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Liste des clients récupérée avec succès")
     })
-    public List<Client> getAllClients() {
+    public List<ClientDTO> getAllClients() {
         return clientService.getAllClients();
     }
 
@@ -37,8 +38,8 @@ public class ClientController {
         @ApiResponse(responseCode = "200", description = "Client trouvé"),
         @ApiResponse(responseCode = "404", description = "Client non trouvé")
     })
-    public ResponseEntity<Client> getClientById(@PathVariable UUID id) {
-        Optional<Client> client = clientService.getClientById(id);
+    public ResponseEntity<ClientDTO> getClientById(@PathVariable UUID id) {
+        Optional<ClientDTO> client = clientService.getClientById(id);
         return client.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
@@ -48,8 +49,8 @@ public class ClientController {
         @ApiResponse(responseCode = "200", description = "Client créé avec succès"),
         @ApiResponse(responseCode = "400", description = "Données invalides")
     })
-    public Client createClient(@RequestBody Client client) {
-        return clientService.saveClient(client);
+    public ClientDTO createClient(@Valid @RequestBody ClientDTO clientDTO) {
+        return clientService.saveClient(clientDTO);
     }
 
     @PutMapping("/{id}")
@@ -58,11 +59,12 @@ public class ClientController {
         @ApiResponse(responseCode = "200", description = "Client mis à jour avec succès"),
         @ApiResponse(responseCode = "404", description = "Client non trouvé")
     })
-    public ResponseEntity<Client> updateClient(@PathVariable UUID id, @RequestBody Client clientDetails) {
-        Optional<Client> client = clientService.getClientById(id);
-        if (client.isPresent()) {
+    public ResponseEntity<ClientDTO> updateClient(@PathVariable UUID id, @Valid @RequestBody ClientDTO clientDetails) {
+        Optional<ClientDTO> existingClient = clientService.getClientById(id);
+        if (existingClient.isPresent()) {
             clientDetails.setId(id);
-            return ResponseEntity.ok(clientService.saveClient(clientDetails));
+            ClientDTO updatedClient = clientService.saveClient(clientDetails);
+            return ResponseEntity.ok(updatedClient);
         } else {
             return ResponseEntity.notFound().build();
         }
@@ -75,7 +77,8 @@ public class ClientController {
         @ApiResponse(responseCode = "404", description = "Client non trouvé")
     })
     public ResponseEntity<Void> deleteClient(@PathVariable UUID id) {
-        if (clientService.getClientById(id).isPresent()) {
+        Optional<ClientDTO> client = clientService.getClientById(id);
+        if (client.isPresent()) {
             clientService.deleteClient(id);
             return ResponseEntity.noContent().build();
         } else {
