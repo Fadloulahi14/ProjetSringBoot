@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +27,7 @@ public class UserController {
     private UserService userService;
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Obtenir tous les utilisateurs", description = "Récupère la liste de tous les utilisateurs")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Liste des utilisateurs récupérée avec succès")
@@ -35,6 +37,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     @Operation(summary = "Obtenir un utilisateur par ID", description = "Récupère un utilisateur spécifique par son identifiant")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Utilisateur trouvé"),
@@ -46,6 +49,7 @@ public class UserController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Créer un nouvel utilisateur", description = "Ajoute un nouvel utilisateur au système")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Utilisateur créé avec succès"),
@@ -62,6 +66,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<User> updateUser(@PathVariable UUID id, @RequestBody User userDetails) {
         Optional<User> user = userService.getUserById(id);
         if (user.isPresent()) {
@@ -73,6 +78,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
         if (userService.getUserById(id).isPresent()) {
             userService.deleteUser(id);
@@ -83,6 +89,7 @@ public class UserController {
     }
 
     @GetMapping("/exists")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<Boolean> existsByEmail(@RequestParam String email) {
         boolean exists = userService.existsByEmail(email);
         return ResponseEntity.ok(exists);

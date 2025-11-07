@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,6 +25,7 @@ public class TransactionController {
     private ITransactionService transactionService;
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Obtenir toutes les transactions", description = "Récupère la liste de toutes les transactions")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Liste des transactions récupérée avec succès")
@@ -33,6 +35,7 @@ public class TransactionController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     @Operation(summary = "Obtenir une transaction par ID", description = "Récupère une transaction spécifique par son identifiant")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Transaction trouvée"),
@@ -44,6 +47,7 @@ public class TransactionController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Créer une nouvelle transaction", description = "Ajoute une nouvelle transaction au système")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Transaction créée avec succès"),
@@ -54,6 +58,7 @@ public class TransactionController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Mettre à jour une transaction", description = "Modifie les informations d'une transaction existante")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Transaction mise à jour avec succès"),
@@ -71,6 +76,7 @@ public class TransactionController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Supprimer une transaction", description = "Supprime une transaction du système")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "204", description = "Transaction supprimée avec succès"),

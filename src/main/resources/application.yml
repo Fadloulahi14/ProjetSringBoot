@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5433/bank123
+    url: jdbc:postgresql://localhost:5433/fadilBank
     username: pguser
     password: pgpassword
     driver-class-name: org.postgresql.Driver
@@ -13,5 +13,42 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        show_sql: true
+        use_sql_comments: true
+        generate_statistics: true
+        jdbc:
+          batch_size: 25
+        order_inserts: true
+        order_updates: true
+        batch_versioned_data: true
+logging:
+  level:
+    org.springframework.orm.jpa: DEBUG
+    org.springframework.transaction: DEBUG
+    org.springframework.transaction.interceptor: TRACE
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.hibernate.engine.transaction.internal.TransactionImpl: DEBUG
+    org.springframework.web.servlet.DispatcherServlet: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
 server:
-  port: 8083
+  port: 8085
+
+springdoc:
+  swagger-ui:
+    tags-sorter: alpha
+    operations-sorter: alpha
+  group-configs:
+    - group: Authentication
+      paths-to-match: /api/auth/**
+    - group: Comptes
+      paths-to-match: /api/v1/comptes/**
+    - group: Transactions
+      paths-to-match: /api/transactions/**
+    - group: Clients
+      paths-to-match: /api/clients/**
+    - group: Administrateurs
+      paths-to-match: /api/admins/**
+    - group: Utilisateurs
+      paths-to-match: /api/users/**

@@ -39,7 +39,7 @@ public enum SuccessMessages {
     ADMIN_RETRIEVED_SUCCESSFULLY("Administrateur récupéré avec succès"),
     ADMINS_RETRIEVED_SUCCESSFULLY("Liste des administrateurs récupérée avec succès"),
     ADMIN_AUTHENTICATED_SUCCESSFULLY("Administrateur authentifié avec succès"),
-
+    LOGIN_SUCCESSFUL("Authentification réussie"),
 
     DATABASE_CONNECTION_SUCCESSFUL("Connexion à la base de données établie"),
     SYSTEM_INITIALIZED_SUCCESSFULLY("Système initialisé avec succès"),

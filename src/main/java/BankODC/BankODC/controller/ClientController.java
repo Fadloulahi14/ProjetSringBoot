@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,6 +25,7 @@ public class ClientController {
     private IClientService clientService;
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Obtenir tous les clients", description = "Récupère la liste de tous les clients")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Liste des clients récupérée avec succès")
@@ -33,6 +35,7 @@ public class ClientController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     @Operation(summary = "Obtenir un client par ID", description = "Récupère un client spécifique par son identifiant")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Client trouvé"),
@@ -44,6 +47,7 @@ public class ClientController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Créer un nouveau client", description = "Ajoute un nouveau client au système")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Client créé avec succès"),
@@ -54,6 +58,7 @@ public class ClientController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Mettre à jour un client", description = "Modifie les informations d'un client existant")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Client mis à jour avec succès"),
@@ -71,6 +76,7 @@ public class ClientController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Supprimer un client", description = "Supprime un client du système")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "204", description = "Client supprimé avec succès"),
