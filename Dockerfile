@@ -1,5 +1,5 @@
-# Étape 1 : Utiliser une image officielle OpenJDK 21 (plus légère et sécurisée)
-FROM openjdk:21-jdk-slim
+# Étape 1 : Utiliser une image officielle OpenJDK 17 (plus légère et sécurisée)
+FROM openjdk:17-slim
 
 # Étape 2 : Définir le répertoire de travail à l'intérieur du conteneur
 WORKDIR /app
