@@ -1,63 +1,66 @@
 package BankODC.BankODC.constants;
 
+
+
 public enum SuccessMessages {
 
+    OPERATION_SUCCESSFUL("success.operation_successful"),
+    DATA_RETRIEVED_SUCCESSFULLY("success.data_retrieved_successfully"),
+    DATA_SAVED_SUCCESSFULLY("success.data_saved_successfully"),
+    DATA_UPDATED_SUCCESSFULLY("success.data_updated_successfully"),
+    DATA_DELETED_SUCCESSFULLY("success.data_deleted_successfully"),
 
-    OPERATION_SUCCESSFUL("Opération réalisée avec succès"),
-    DATA_RETRIEVED_SUCCESSFULLY("Données récupérées avec succès"),
-    DATA_SAVED_SUCCESSFULLY("Données sauvegardées avec succès"),
-    DATA_UPDATED_SUCCESSFULLY("Données mises à jour avec succès"),
-    DATA_DELETED_SUCCESSFULLY("Données supprimées avec succès"),
+    CLIENT_CREATED_SUCCESSFULLY("success.client_created_successfully"),
+    CLIENT_UPDATED_SUCCESSFULLY("success.client_updated_successfully"),
+    CLIENT_DELETED_SUCCESSFULLY("success.client_deleted_successfully"),
+    CLIENT_RETRIEVED_SUCCESSFULLY("success.client_retrieved_successfully"),
+    CLIENTS_RETRIEVED_SUCCESSFULLY("success.clients_retrieved_successfully"),
 
+    COMPTE_CREATED_SUCCESSFULLY("success.compte_created_successfully"),
+    COMPTE_UPDATED_SUCCESSFULLY("success.compte_updated_successfully"),
+    COMPTE_DELETED_SUCCESSFULLY("success.compte_deleted_successfully"),
+    COMPTE_RETRIEVED_SUCCESSFULLY("success.compte_retrieved_successfully"),
+    COMPTES_RETRIEVED_SUCCESSFULLY("success.comptes_retrieved_successfully"),
+    COMPTE_BALANCE_UPDATED("success.compte_balance_updated"),
 
-    CLIENT_CREATED_SUCCESSFULLY("Client créé avec succès"),
-    CLIENT_UPDATED_SUCCESSFULLY("Client mis à jour avec succès"),
-    CLIENT_DELETED_SUCCESSFULLY("Client supprimé avec succès"),
-    CLIENT_RETRIEVED_SUCCESSFULLY("Client récupéré avec succès"),
-    CLIENTS_RETRIEVED_SUCCESSFULLY("Liste des clients récupérée avec succès"),
+    TRANSACTION_CREATED_SUCCESSFULLY("success.transaction_created_successfully"),
+    TRANSACTION_UPDATED_SUCCESSFULLY("success.transaction_updated_successfully"),
+    TRANSACTION_DELETED_SUCCESSFULLY("success.transaction_deleted_successfully"),
+    TRANSACTION_RETRIEVED_SUCCESSFULLY("success.transaction_retrieved_successfully"),
+    TRANSACTIONS_RETRIEVED_SUCCESSFULLY("success.transactions_retrieved_successfully"),
+    TRANSACTION_PROCESSED_SUCCESSFULLY("success.transaction_processed_successfully"),
 
+    ADMIN_CREATED_SUCCESSFULLY("success.admin_created_successfully"),
+    ADMIN_UPDATED_SUCCESSFULLY("success.admin_updated_successfully"),
+    ADMIN_DELETED_SUCCESSFULLY("success.admin_deleted_successfully"),
+    ADMIN_RETRIEVED_SUCCESSFULLY("success.admin_retrieved_successfully"),
+    ADMINS_RETRIEVED_SUCCESSFULLY("success.admins_retrieved_successfully"),
+    ADMIN_AUTHENTICATED_SUCCESSFULLY("success.admin_authenticated_successfully"),
+    LOGIN_SUCCESSFUL("fallou"),
 
-    COMPTE_CREATED_SUCCESSFULLY("Compte créé avec succès"),
-    COMPTE_UPDATED_SUCCESSFULLY("Compte mis à jour avec succès"),
-    COMPTE_DELETED_SUCCESSFULLY("Compte supprimé avec succès"),
-    COMPTE_RETRIEVED_SUCCESSFULLY("Compte récupéré avec succès"),
-    COMPTES_RETRIEVED_SUCCESSFULLY("Liste des comptes récupérée avec succès"),
-    COMPTE_BALANCE_UPDATED("Solde du compte mis à jour avec succès"),
+    DATABASE_CONNECTION_SUCCESSFUL("success.database_connection_successful"),
+    SYSTEM_INITIALIZED_SUCCESSFULLY("success.system_initialized_successfully"),
+    BACKUP_COMPLETED_SUCCESSFULLY("success.backup_completed_successfully"),
+    CONFIGURATION_LOADED_SUCCESSFULLY("success.configuration_loaded_successfully");
 
+    private final String messageKey;
 
-    TRANSACTION_CREATED_SUCCESSFULLY("Transaction créée avec succès"),
-    TRANSACTION_UPDATED_SUCCESSFULLY("Transaction mise à jour avec succès"),
-    TRANSACTION_DELETED_SUCCESSFULLY("Transaction supprimée avec succès"),
-    TRANSACTION_RETRIEVED_SUCCESSFULLY("Transaction récupérée avec succès"),
-    TRANSACTIONS_RETRIEVED_SUCCESSFULLY("Liste des transactions récupérée avec succès"),
-    TRANSACTION_PROCESSED_SUCCESSFULLY("Transaction traitée avec succès"),
+    SuccessMessages(String messageKey) {
+        this.messageKey = messageKey;
+    }
 
-
-    ADMIN_CREATED_SUCCESSFULLY("Administrateur créé avec succès"),
-    ADMIN_UPDATED_SUCCESSFULLY("Administrateur mis à jour avec succès"),
-    ADMIN_DELETED_SUCCESSFULLY("Administrateur supprimé avec succès"),
-    ADMIN_RETRIEVED_SUCCESSFULLY("Administrateur récupéré avec succès"),
-    ADMINS_RETRIEVED_SUCCESSFULLY("Liste des administrateurs récupérée avec succès"),
-    ADMIN_AUTHENTICATED_SUCCESSFULLY("Administrateur authentifié avec succès"),
-    LOGIN_SUCCESSFUL("Authentification réussie"),
-
-    DATABASE_CONNECTION_SUCCESSFUL("Connexion à la base de données établie"),
-    SYSTEM_INITIALIZED_SUCCESSFULLY("Système initialisé avec succès"),
-    BACKUP_COMPLETED_SUCCESSFULLY("Sauvegarde terminée avec succès"),
-    CONFIGURATION_LOADED_SUCCESSFULLY("Configuration chargée avec succès");
-
-    private final String message;
-
-    SuccessMessages(String message) {
-        this.message = message;
+    public String getMessageKey() {
+        return messageKey;
     }
 
     public String getMessage() {
-        return message;
+        // Cette méthode retournera la clé pour l'instant
+        // Le MessageUtil sera utilisé dans les services pour récupérer le message traduit
+        return messageKey;
     }
 
     @Override
     public String toString() {
-        return message;
+        return messageKey;
     }
 }

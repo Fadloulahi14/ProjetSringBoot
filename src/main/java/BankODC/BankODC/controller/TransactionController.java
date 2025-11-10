@@ -1,11 +1,13 @@
 package BankODC.BankODC.controller;
 
-import BankODC.BankODC.dto.TransactionDTO;
-import BankODC.BankODC.service.ITransactionService;
+import BankODC.BankODC.constants.ApiResponse;
+import BankODC.BankODC.dto.request.TransactionRequest;
+import BankODC.BankODC.dto.response.TransactionResponse;
+import BankODC.BankODC.service.interfaces.TransactionService;
+import BankODC.BankODC.util.MessageUtil;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,73 +24,76 @@ import java.util.UUID;
 public class TransactionController {
 
     @Autowired
-    private ITransactionService transactionService;
+    private TransactionService transactionService;
+
+    @Autowired
+    private MessageUtil messageUtil;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Obtenir toutes les transactions", description = "Récupère la liste de toutes les transactions")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Liste des transactions récupérée avec succès")
-    })
-    public List<TransactionDTO> getAllTransactions() {
-        return transactionService.getAllTransactions();
+    public ResponseEntity<ApiResponse<List<TransactionResponse>>> getAllTransactions() {
+        List<TransactionResponse> transactions = transactionService.getAllTransactions().stream()
+            .map(t -> new TransactionResponse(t.getId(), t.getCompteId(), t.getType(), t.getMontant(), t.getDate()))
+            .toList();
+        String successMessage = messageUtil.getSuccessMessage("transactions_retrieved_successfully");
+        return ResponseEntity.ok(ApiResponse.success(successMessage, transactions));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     @Operation(summary = "Obtenir une transaction par ID", description = "Récupère une transaction spécifique par son identifiant")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Transaction trouvée"),
-        @ApiResponse(responseCode = "404", description = "Transaction non trouvée")
-    })
-    public ResponseEntity<TransactionDTO> getTransactionById(@PathVariable UUID id) {
-        Optional<TransactionDTO> transaction = transactionService.getTransactionById(id);
-        return transaction.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<ApiResponse<TransactionResponse>> getTransactionById(@PathVariable UUID id) {
+        Optional<TransactionResponse> transaction = transactionService.getTransactionById(id);
+        if (transaction.isPresent()) {
+            String successMessage = messageUtil.getSuccessMessage("transaction_retrieved_successfully");
+            return ResponseEntity.ok(ApiResponse.success(successMessage, transaction.get()));
+        } else {
+            String errorMessage = messageUtil.getErrorMessage("transaction_not_found");
+            return ResponseEntity.ok(ApiResponse.error(errorMessage, null));
+        }
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Créer une nouvelle transaction", description = "Ajoute une nouvelle transaction au système")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Transaction créée avec succès"),
-        @ApiResponse(responseCode = "400", description = "Données invalides")
-    })
-    public TransactionDTO createTransaction(@Valid @RequestBody TransactionDTO transactionDTO) {
-        return transactionService.saveTransaction(transactionDTO);
+    public ResponseEntity<ApiResponse<TransactionResponse>> createTransaction(@Valid @RequestBody TransactionRequest transactionRequest) {
+        try {
+            TransactionResponse savedTransaction = transactionService.saveTransactionFromRequest(transactionRequest);
+            String successMessage = messageUtil.getSuccessMessage("transaction_created_successfully");
+            return ResponseEntity.ok(ApiResponse.success(successMessage, savedTransaction));
+        } catch (Exception e) {
+            String errorMessage = messageUtil.getErrorMessage("transaction_creation_failed");
+            return ResponseEntity.ok(ApiResponse.error(errorMessage, null));
+        }
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Mettre à jour une transaction", description = "Modifie les informations d'une transaction existante")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Transaction mise à jour avec succès"),
-        @ApiResponse(responseCode = "404", description = "Transaction non trouvée")
-    })
-    public ResponseEntity<TransactionDTO> updateTransaction(@PathVariable UUID id, @Valid @RequestBody TransactionDTO transactionDetails) {
-        Optional<TransactionDTO> existingTransaction = transactionService.getTransactionById(id);
-        if (existingTransaction.isPresent()) {
-            transactionDetails.setId(id);
-            TransactionDTO updatedTransaction = transactionService.saveTransaction(transactionDetails);
-            return ResponseEntity.ok(updatedTransaction);
-        } else {
-            return ResponseEntity.notFound().build();
+    public ResponseEntity<ApiResponse<TransactionResponse>> updateTransaction(@PathVariable UUID id, @Valid @RequestBody TransactionRequest transactionRequest) {
+        try {
+            TransactionResponse updatedTransaction = transactionService.updateTransactionFromRequest(id, transactionRequest);
+            String successMessage = messageUtil.getSuccessMessage("transaction_updated_successfully");
+            return ResponseEntity.ok(ApiResponse.success(successMessage, updatedTransaction));
+        } catch (Exception e) {
+            String errorMessage = messageUtil.getErrorMessage("transaction_not_found");
+            return ResponseEntity.ok(ApiResponse.error(errorMessage, null));
         }
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Supprimer une transaction", description = "Supprime une transaction du système")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "204", description = "Transaction supprimée avec succès"),
-        @ApiResponse(responseCode = "404", description = "Transaction non trouvée")
-    })
-    public ResponseEntity<Void> deleteTransaction(@PathVariable UUID id) {
-        Optional<TransactionDTO> transaction = transactionService.getTransactionById(id);
+    public ResponseEntity<ApiResponse<Void>> deleteTransaction(@PathVariable UUID id) {
+        Optional<TransactionResponse> transaction = transactionService.getTransactionById(id);
         if (transaction.isPresent()) {
             transactionService.deleteTransaction(id);
-            return ResponseEntity.noContent().build();
+            String successMessage = messageUtil.getSuccessMessage("transaction_deleted_successfully");
+            return ResponseEntity.ok(ApiResponse.success(successMessage, null));
         } else {
-            return ResponseEntity.notFound().build();
+            String errorMessage = messageUtil.getErrorMessage("transaction_not_found");
+            return ResponseEntity.ok(ApiResponse.error(errorMessage, null));
         }
     }
 }

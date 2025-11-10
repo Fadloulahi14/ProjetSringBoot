@@ -1,11 +1,13 @@
 package BankODC.BankODC.controller;
 
-import BankODC.BankODC.dto.AdminDTO;
+import BankODC.BankODC.constants.ApiResponse;
 import BankODC.BankODC.dto.AdminCreateDTO;
-import BankODC.BankODC.service.IAdminService;
+import BankODC.BankODC.dto.request.AdminRequest;
+import BankODC.BankODC.dto.response.AdminResponse;
+import BankODC.BankODC.service.interfaces.AdminService;
 import BankODC.BankODC.exception.AdminException;
+import BankODC.BankODC.util.MessageUtil;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -22,49 +24,33 @@ import java.util.UUID;
 public class AdminController {
 
     @Autowired
-    private IAdminService adminService;
+    private AdminService adminService;
 
     @GetMapping
     @Operation(summary = "Obtenir tous les administrateurs", description = "Récupère la liste de tous les administrateurs")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Liste des administrateurs récupérée avec succès")
-    })
-
-    public ResponseEntity<List<AdminDTO>> getAllAdmins() {
-        return ResponseEntity.ok(adminService.getAllAdmins());
+    public ResponseEntity<ApiResponse<List<AdminResponse>>> getAllAdmins() {
+        List<AdminResponse> admins = adminService.getAllAdmins();
+        return ResponseEntity.ok(ApiResponse.success("Administrateurs récupérés avec succès", admins));
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Obtenir un administrateur par ID", description = "Récupère un administrateur spécifique par son identifiant")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Administrateur trouvé"),
-        @ApiResponse(responseCode = "404", description = "Administrateur non trouvé")
-    })
-
-
-
-    public ResponseEntity<AdminDTO> getAdminById(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponse<AdminResponse>> getAdminById(@PathVariable UUID id) {
         return adminService.getAdminById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .map(admin -> ResponseEntity.ok(ApiResponse.success("Administrateur trouvé", admin)))
+                .orElse(ResponseEntity.ok(ApiResponse.error("Administrateur non trouvé", null)));
     }
 
 
 
     @PostMapping
     @Operation(summary = "Créer un nouvel administrateur", description = "Ajoute un nouvel administrateur au système")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Administrateur créé avec succès"),
-        @ApiResponse(responseCode = "400", description = "Données invalides")
-    })
-
-
-
-    public ResponseEntity<AdminDTO> createAdmin(@Valid @RequestBody AdminCreateDTO adminCreateDTO) {
+    public ResponseEntity<ApiResponse<AdminResponse>> createAdmin(@Valid @RequestBody AdminCreateDTO adminCreateDTO) {
         try {
-            return ResponseEntity.ok(adminService.createAdmin(adminCreateDTO));
+            AdminResponse createdAdmin = adminService.createAdmin(adminCreateDTO);
+            return ResponseEntity.ok(ApiResponse.success("Administrateur créé avec succès", createdAdmin));
         } catch (AdminException e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.ok(ApiResponse.error("Erreur lors de la création", null));
         }
     }
 
@@ -72,35 +58,25 @@ public class AdminController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Mettre à jour un administrateur", description = "Modifie les informations d'un administrateur existant")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Administrateur mis à jour avec succès"),
-        @ApiResponse(responseCode = "404", description = "Administrateur non trouvé")
-    })
-
-    
-    public ResponseEntity<AdminDTO> updateAdmin(@PathVariable UUID id, @Valid @RequestBody AdminDTO adminDTO) {
+    public ResponseEntity<ApiResponse<AdminResponse>> updateAdmin(@PathVariable UUID id, @Valid @RequestBody AdminRequest adminRequest) {
         try {
-            return ResponseEntity.ok(adminService.updateAdmin(id, adminDTO));
+            AdminResponse updatedAdmin = adminService.updateAdminFromRequest(id, adminRequest);
+            return ResponseEntity.ok(ApiResponse.success("Administrateur mis à jour avec succès", updatedAdmin));
         } catch (AdminException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.ok(ApiResponse.error("Administrateur non trouvé", null));
         }
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Supprimer un administrateur", description = "Supprime un administrateur du système")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "204", description = "Administrateur supprimé avec succès"),
-        @ApiResponse(responseCode = "404", description = "Administrateur non trouvé"),
-        @ApiResponse(responseCode = "400", description = "Erreur lors de la suppression")
-    })
-    public ResponseEntity<Void> deleteAdmin(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponse<Void>> deleteAdmin(@PathVariable UUID id) {
         try {
             if (adminService.deleteAdmin(id)) {
-                return ResponseEntity.noContent().build();
+                return ResponseEntity.ok(ApiResponse.success("Administrateur supprimé avec succès", null));
             }
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.ok(ApiResponse.error("Administrateur non trouvé", null));
         } catch (AdminException e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.ok(ApiResponse.error("Erreur lors de la suppression", null));
         }
     }
 }

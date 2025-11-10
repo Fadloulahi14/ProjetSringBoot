@@ -1,10 +1,11 @@
 package BankODC.BankODC.controller;
 
-import BankODC.BankODC.dto.ClientDTO;
-import BankODC.BankODC.service.IClientService;
+import BankODC.BankODC.constants.ApiResponse;
+import BankODC.BankODC.dto.request.ClientRequest;
+import BankODC.BankODC.dto.response.ClientResponse;
+import BankODC.BankODC.service.interfaces.ClientService;
+import BankODC.BankODC.util.MessageUtil;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,73 +23,81 @@ import java.util.UUID;
 public class ClientController {
 
     @Autowired
-    private IClientService clientService;
+    private ClientService clientService;
+
+    @Autowired
+    private MessageUtil messageUtil;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Obtenir tous les clients", description = "Récupère la liste de tous les clients")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Liste des clients récupérée avec succès")
-    })
-    public List<ClientDTO> getAllClients() {
-        return clientService.getAllClients();
+    public ResponseEntity<ApiResponse<List<ClientResponse>>> getAllClients() {
+        List<ClientResponse> clients = clientService.getAllClients().stream()
+            .map(client -> new ClientResponse(client.getId(), client.getUserId(), client.getNom(),
+                client.getPrenom(), client.getEmail(), client.getTelephone(),
+                client.getAdresse(), client.getDateNaissance()))
+            .toList();
+        String successMessage = messageUtil.getSuccessMessage("clients_retrieved_successfully");
+        return ResponseEntity.ok(ApiResponse.success(successMessage, clients));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     @Operation(summary = "Obtenir un client par ID", description = "Récupère un client spécifique par son identifiant")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Client trouvé"),
-        @ApiResponse(responseCode = "404", description = "Client non trouvé")
-    })
-    public ResponseEntity<ClientDTO> getClientById(@PathVariable UUID id) {
-        Optional<ClientDTO> client = clientService.getClientById(id);
-        return client.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<ApiResponse<ClientResponse>> getClientById(@PathVariable UUID id) {
+        Optional<ClientResponse> client = clientService.getClientById(id)
+            .map(c -> new ClientResponse(c.getId(), c.getUserId(), c.getNom(),
+                c.getPrenom(), c.getEmail(), c.getTelephone(),
+                c.getAdresse(), c.getDateNaissance()));
+        if (client.isPresent()) {
+            String successMessage = messageUtil.getSuccessMessage("client_retrieved_successfully");
+            return ResponseEntity.ok(ApiResponse.success(successMessage, client.get()));
+        } else {
+            String errorMessage = messageUtil.getErrorMessage("client_not_found");
+            return ResponseEntity.ok(ApiResponse.error(errorMessage, null));
+        }
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Créer un nouveau client", description = "Ajoute un nouveau client au système")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Client créé avec succès"),
-        @ApiResponse(responseCode = "400", description = "Données invalides")
-    })
-    public ClientDTO createClient(@Valid @RequestBody ClientDTO clientDTO) {
-        return clientService.saveClient(clientDTO);
+    public ResponseEntity<ApiResponse<ClientResponse>> createClient(@Valid @RequestBody ClientRequest clientRequest) {
+        try {
+            ClientResponse savedClient = clientService.saveClientFromRequest(clientRequest);
+            String successMessage = messageUtil.getSuccessMessage("client_created_successfully");
+            return ResponseEntity.ok(ApiResponse.success(successMessage, savedClient));
+        } catch (Exception e) {
+            String errorMessage = messageUtil.getErrorMessage("client_creation_failed");
+            return ResponseEntity.ok(ApiResponse.error(errorMessage, null));
+        }
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Mettre à jour un client", description = "Modifie les informations d'un client existant")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Client mis à jour avec succès"),
-        @ApiResponse(responseCode = "404", description = "Client non trouvé")
-    })
-    public ResponseEntity<ClientDTO> updateClient(@PathVariable UUID id, @Valid @RequestBody ClientDTO clientDetails) {
-        Optional<ClientDTO> existingClient = clientService.getClientById(id);
-        if (existingClient.isPresent()) {
-            clientDetails.setId(id);
-            ClientDTO updatedClient = clientService.saveClient(clientDetails);
-            return ResponseEntity.ok(updatedClient);
-        } else {
-            return ResponseEntity.notFound().build();
+    public ResponseEntity<ApiResponse<ClientResponse>> updateClient(@PathVariable UUID id, @Valid @RequestBody ClientRequest clientRequest) {
+        try {
+            ClientResponse updatedClient = clientService.updateClientFromRequest(id, clientRequest);
+            String successMessage = messageUtil.getSuccessMessage("client_updated_successfully");
+            return ResponseEntity.ok(ApiResponse.success(successMessage, updatedClient));
+        } catch (Exception e) {
+            String errorMessage = messageUtil.getErrorMessage("client_not_found");
+            return ResponseEntity.ok(ApiResponse.error(errorMessage, null));
         }
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Supprimer un client", description = "Supprime un client du système")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "204", description = "Client supprimé avec succès"),
-        @ApiResponse(responseCode = "404", description = "Client non trouvé")
-    })
-    public ResponseEntity<Void> deleteClient(@PathVariable UUID id) {
-        Optional<ClientDTO> client = clientService.getClientById(id);
+    public ResponseEntity<ApiResponse<Void>> deleteClient(@PathVariable UUID id) {
+        Optional<ClientResponse> client = clientService.getClientById(id);
         if (client.isPresent()) {
             clientService.deleteClient(id);
-            return ResponseEntity.noContent().build();
+            String successMessage = messageUtil.getSuccessMessage("client_deleted_successfully");
+            return ResponseEntity.ok(ApiResponse.success(successMessage, null));
         } else {
-            return ResponseEntity.notFound().build();
+            String errorMessage = messageUtil.getErrorMessage("client_not_found");
+            return ResponseEntity.ok(ApiResponse.error(errorMessage, null));
         }
     }
 }

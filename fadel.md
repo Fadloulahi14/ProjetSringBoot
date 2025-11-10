@@ -2,3 +2,7 @@
     username: pguser
     password: pgpassword
     driver-class-name: org.postgresql.Driver
+
+    url: ${DATABASE_URL}
+    username: ${PGUSER}
+    password: ${PGPASSWORD}
